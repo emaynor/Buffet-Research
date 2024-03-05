@@ -6,7 +6,7 @@ Files:
 
 
   * `maincd` : Main Code
-  * 'utilities': functions
+  * `utilities` : functions
 
 ##References
   This code is based on original Hopf Analysis methodology by Dr.Riso.
