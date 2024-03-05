@@ -1,7 +1,7 @@
 # Buffet-Research
   Repo for all materials associated with the Buffet Research Project. This includes code for the project in python as well as the utilities for the associated main code.
 #Contents
-* 'main' : main code
+* 'maincd' : main code
 * 'utilities': functions
 
 ##References
