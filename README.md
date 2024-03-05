@@ -13,4 +13,4 @@ Files:
   Riso, C., Cesnik, C. E. S., and Epureanu, B. I., "Estimating Flutter Bifurcation Diagrams Using the State Velocity," AIAA Journal, 2022. DOI: https://doi.org/10.2514/1.J061860. 
 
 ## Contact
-    emaynor@vols.utk.edu
+  Elias Maynor (emaynor@vols.utk.edu)
