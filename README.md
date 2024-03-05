@@ -8,9 +8,9 @@ Files:
   * `maincd` : Main Code
   * `Utilitiespyth` : functions
 
-##References
+References
   This code is based on original Hopf Analysis methodology by Dr.Riso.
   Riso, C., Cesnik, C. E. S., and Epureanu, B. I., "Estimating Flutter Bifurcation Diagrams Using the State Velocity," AIAA Journal, 2022. DOI: https://doi.org/10.2514/1.J061860. 
 
-#Contact
+Contact
   emaynor@vols.utk.edu
