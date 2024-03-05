@@ -1,0 +1,122 @@
+
+#Elias Maynor Hopf Analysis Code
+#University of Tennessee Knoxville MABE Dept.
+#emaynor@vols.utk.edu
+
+
+
+import os
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+from Utilitiespyth import compute_envelope_analytical
+from Utilitiespyth import fit_peaks_interpolate
+from Utilitiespyth import compute_recovery_rate_FD
+from Utilitiespyth import compute_diagram_amplitude
+from Utilitiespyth import forecast_1D
+from Utilitiespyth import plot_dynamic_analysis
+from Utilitiespyth import plot_bifurcation_diagram
+from Utilitiespyth import compute_A_lin
+
+# Clear all variables, close plots, and clear console
+# No equivalent for 'clearvars' in Python
+plt.close('all')
+os.system('cls' if os.name == 'nt' else 'clear')
+
+# Postflutter behavior
+behavior = 'subcritical'
+# behavior = 'supercritical'
+
+# Plot parameters
+save_plots = True
+c1 = [0, 0.4470, 0.7410]
+c2 = [0.8500, 0.3250, 0.0980]
+c3 = [0.9290, 0.6940, 0.1250]
+c4 = [0.4940, 0.1840, 0.5560]
+c5 = [0.4660, 0.6740, 0.1880]
+plot_format = 'pdf'
+state_min, state_max = -1.5, 1.5
+state_skip = 4
+plot_params = {
+    'save_plots': save_plots,
+    'plot_format': plot_format,
+    'c1': c1, 'c2': c2, 'c3': c3, 'c4': c4, 'c5': c5,
+    'state_min': state_min, 'state_max': state_max
+}
+
+# System parameters
+alpha, omega_bar = 1.0, 2 * np.pi
+if behavior == 'supercritical':
+    beta, gamma = -1.0, 0.0
+elif behavior == 'subcritical':
+    beta, gamma = 1.0, 1.0
+n_states = 2
+sys_params = {
+    'alpha': alpha, 'omega_bar': omega_bar,
+    'beta': beta, 'gamma': gamma, 'n_states': n_states
+}
+
+# Output parameters
+output_folder = f"output_beta_{beta}_gamma_{gamma}"
+if not os.path.isdir(output_folder):
+    os.mkdir(output_folder)
+plot_params['output_folder'] = output_folder
+
+# Dynamic analysis parameters
+mu_dyn_min, mu_dyn_max = -0.4, 0.4
+n_mu_dyn = 17
+mu_dyn = np.linspace(mu_dyn_min, mu_dyn_max, n_mu_dyn)
+if behavior == 'supercritical':
+    critical_point_index = np.where(mu_dyn == 0)[0]
+    mu_dyn = np.delete(mu_dyn, critical_point_index)
+    n_mu_dyn -= 1
+y_e = np.zeros(n_states)
+state_index = 0
+r_0_dyn = 1.5
+t_1, t_2, dt = 0.0, 60.0, 0.002
+relative_tolerance = 1.0e-10
+
+# Recovery rates parameters
+rates_indices = [0, 2]
+n_rates_indices = len(rates_indices)
+dt_fit = dt * 20
+r_min_rates = 0.01
+peak_level = 'upper'
+r_min_peaks = 0.05
+
+# Arrays for storing results
+A_dyn = [None] * n_mu_dyn
+y_0_dyn = np.zeros((n_states, n_mu_dyn))
+t = [None] * n_mu_dyn
+y = [None] * n_mu_dyn
+t_peaks_dyn = [None] * n_mu_dyn
+r_peaks_dyn = [None] * n_mu_dyn
+t_peaks_dyn_num = [None] * n_rates_indices
+r_peaks_dyn_num = [None] * n_rates_indices
+rates_dyn_num = [None] * n_rates_indices
+diagram_dyn = np.zeros((n_mu_dyn, 2))
+
+# Loop over control parameter values
+k = 0
+for i in range(n_mu_dyn):
+    # Compute state matrix
+    A_i = compute_A_lin(sys_params, mu_dyn[i])
+
+    # Build initial condition
+    y_0_i = np.copy(y_e)
+    y_0_i[state_index] += r_0_dyn
+
+    # Integrate dynamics
+    t_i = np.arange(t_1, t_2 + dt, dt)
+    y_i = odeint(dydt, y_0_i, t_i, args=(A_i, sys_params), rtol=relative_tolerance)
+
+    # Compute analytical envelope
+    t_peaks_i, r_peaks_i = compute_envelope_analytical(t_i, y_i, y_e)
+
+    # Interpolate envelope points
+    t_peaks_i, r_peaks_i = fit_peaks_interpolate(t_peaks_i, r_peaks_i, t_peaks_i[0], t_peaks_i[-1], dt_fit, 'pchip')
+
+    # Compute recovery rates
+    if i in rates_indices:
+        t_peaks_num_i, r_peaks_num_i, rates_num_i = compute_recovery_rate_FD(t_peaks_i, r_peaks_i, r_min_rates, 2)
+        t_peaks_dyn_num[k], r_peaks
